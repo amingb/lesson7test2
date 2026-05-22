@@ -3,7 +3,7 @@ import io
 import base64
 from html import escape
 
-from flask import Flask, request, Response, render_template
+from flask import Flask, request, Response, render_template, send_from_directory
 import qrcode
 from qrcode.constants import (
     ERROR_CORRECT_L,
@@ -13,7 +13,7 @@ from qrcode.constants import (
 )
 
 
-app = Flask(__name__, template_folder=".", static_folder=".")
+app = Flask(__name__, template_folder=".", static_folder=None)
 
 MAX_TEXT_LENGTH = 500
 MAX_SIZE = 1024
@@ -56,8 +56,17 @@ def generate_qr_png_data_url(text, size, border, error_level):
     return f"data:image/png;base64,{png_base64}"
 
 
+@app.route("/style.css")
+def style_css():
+    return send_from_directory(".", "style.css", mimetype="text/css")
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
+    # RenderなどのHEAD確認用
+    if request.method == "HEAD":
+        return Response(status=200)
+
     text = ""
     size = 512
     border = 4
